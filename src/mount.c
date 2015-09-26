@@ -61,7 +61,6 @@ struct mount {
 struct overlay {
 	char *overlay;
 	char *workdir;
-	char type;
 };
 
 static void make_bind_dest(struct mount *m, const char *dest);
@@ -288,15 +287,10 @@ static void make_overlay_opts(struct mount *m, const char *dest) {
 
 	char *overlayfs_opts = NULL;
 
-	if (ovl->type == 'a') {
-		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dest);
-		fail_if(rc < 0, "OOM");
-	} else if (ovl->type == 'o') {
-		rc = asprintf(&overlayfs_opts,
-		              "upperdir=%s,lowerdir=%s,workdir=%s",
-		              overlay, dest, workdir);
-		fail_if(rc < 0, "OOM");
-	}
+	rc = asprintf(&overlayfs_opts,
+	              "upperdir=%s,lowerdir=%s,workdir=%s",
+	              overlay, dest, workdir);
+	fail_if(rc < 0, "OOM");
 
 	m->data = overlayfs_opts;
 }
@@ -307,14 +301,6 @@ static void mount_add_overlay(struct mount **mounts, const char *overlay,
 
 	ovl->overlay = strdup(overlay);
 	ovl->workdir = strdup(workdir);
-
-#ifdef HAVE_AUFS
-	ovl->type = 'a';
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
-	ovl->type = 'o';
-#else
-	fail_printf("The 'overlay' mount type is not supported");
-#endif
 
 	mount_add(mounts, NULL, dst, "overlay", 0, ovl);
 }
