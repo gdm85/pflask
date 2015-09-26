@@ -197,7 +197,6 @@ void setup_nodes(const char *dest) {
 		"/dev/full",
 		"/dev/null",
 		"/dev/zero",
-		"/dev/random",
 		"/dev/urandom",
 	};
 
