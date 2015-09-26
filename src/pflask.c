@@ -63,6 +63,14 @@ static void do_daemonize(void);
 static void do_chroot(const char *dest);
 static pid_t do_clone(int *flags);
 
+/* workaround for some kernel bugs on Trusty
+Use:
+- 0 for 3.13.0-45
+- 1 for 3.19.0-28, 3.16.0-45 etc
+- 2 for more recent kernels which are unaffected (?)
+*/
+int kernelQuality = 1;
+
 int main(int argc, char *argv[]) {
 	int rc, sync[2];
 
@@ -211,13 +219,17 @@ int main(int argc, char *argv[]) {
 		setup_mount(mounts, args.chroot_arg, args.ephemeral_flag);
 
 		if (args.chroot_given) {
-			setup_nodes(args.chroot_arg);
+			if (kernelQuality > 0) {
+				setup_nodes(args.chroot_arg);
 
-			setup_ptmx(args.chroot_arg);
+				setup_ptmx(args.chroot_arg);
 
-			setup_symlinks(args.chroot_arg);
+				setup_symlinks(args.chroot_arg);
 
-			setup_console(args.chroot_arg, master);
+				setup_console(args.chroot_arg, master);
+			} else {
+				err_printf("This kernel has a serious bug with sysfs, chroot will not be prepared");
+			}
 
 			do_chroot(args.chroot_arg);
 		}

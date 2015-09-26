@@ -46,6 +46,8 @@
 #include "printf.h"
 #include "util.h"
 
+extern int kernelQuality;
+
 struct mount {
 	char *src;
 	char *dst;
@@ -179,28 +181,32 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 		mount_add(&sys_mounts, "proc", "/proc", "proc",
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		procsys_dir = path_prefix_root(dest, "/proc/sys");
-		mount_add(&sys_mounts, procsys_dir, "/proc/sys", "proc/sys",
-		          MS_BIND, NULL);
+		if (kernelQuality > 0) {
+			procsys_dir = path_prefix_root(dest, "/proc/sys");
+			mount_add(&sys_mounts, procsys_dir, "/proc/sys", "proc/sys",
+			          MS_BIND, NULL);
 
-		mount_add(&sys_mounts, NULL, "/proc/sys", "proc/sys-ro",
-		          MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+			mount_add(&sys_mounts, NULL, "/proc/sys", "proc/sys-ro",
+			          MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
 
-		mount_add(&sys_mounts, "sysfs", "/sys", "sysfs",
-		          MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
+			if (kernelQuality > 1) {
+				mount_add(&sys_mounts, "sysfs", "/sys", "sysfs",
+				          MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
+			}
 
-		mount_add(&sys_mounts, "tmpfs", "/dev", "tmpfs",
-		          MS_NOSUID | MS_STRICTATIME, "mode=755");
+			mount_add(&sys_mounts, "tmpfs", "/dev", "tmpfs",
+			          MS_NOSUID | MS_STRICTATIME, "mode=755");
 
-		mount_add(&sys_mounts, "devpts", "/dev/pts", "devpts",
-		          MS_NOSUID | MS_NOEXEC,
-		          "newinstance,ptmxmode=0666,mode=0620,gid=5");
+			mount_add(&sys_mounts, "devpts", "/dev/pts", "devpts",
+			          MS_NOSUID | MS_NOEXEC,
+			          "newinstance,ptmxmode=0666,mode=0620,gid=5");
 
-		mount_add(&sys_mounts, "tmpfs", "/dev/shm", "tmpfs",
-		          MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");
+			mount_add(&sys_mounts, "tmpfs", "/dev/shm", "tmpfs",
+			          MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");
 
-		mount_add(&sys_mounts, "tmpfs", "/run", "tmpfs",
-		          MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
+			mount_add(&sys_mounts, "tmpfs", "/run", "tmpfs",
+			          MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
+		}
 	}
 
 	DL_CONCAT(sys_mounts, mounts);
