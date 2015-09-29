@@ -132,6 +132,18 @@ def build(bld):
 	bld.env.append_value('INCLUDES', ['deps', 'src'])
 
 	bld(
+		name   = 'libtoml',
+		cwd    = 'deps/libtoml',
+		rule   = 'autoconf && ./configure && make -j && cp libtoml.so ../../build/deps',
+		source = bld.path.ant_glob('deps/libtoml/*.c') +
+		         bld.path.ant_glob('deps/libtoml/*.h') +
+		         bld.path.ant_glob('deps/libtoml/*.ac') +
+		         bld.path.ant_glob('deps/libtoml/*.in'),
+		target = 'deps/libtoml.so',
+		install_path = bld.env.LIBDIR
+	)
+
+	bld(
 		name         = 'pflask',
 		features     = 'c cprogram',
 		source       = filter_sources(bld, sources),
