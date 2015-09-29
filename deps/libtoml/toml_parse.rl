@@ -826,23 +826,23 @@ toml_parse(struct toml_node *toml_root, char *buf, int buflen)
 	%% write exec;
 
 	if (malloc_error) {
-		fprintf(stderr, "malloc failed, line %d\n", curline);
+		fprintf(stderr, "libtoml: malloc failed, line %d\n", curline);
 		return 1;
 	}
 
 	if (parse_error) {
-		fprintf(stderr, "%s at %d p = %.5s\n", parse_error, curline, p);
+		fprintf(stderr, "libtoml: %s at %d p = %.5s\n", parse_error, curline, p);
 		free(parse_error);
 		return 1;
 	}
 
 	if (in_text) {
-		fprintf(stderr, "not in start, line %d\n", curline);
+		fprintf(stderr, "libtoml: not in start, line %d\n", curline);
 		return 1;
 	}
 
 	if (cs == toml_error) {
-		fprintf(stderr, "PARSE_ERROR, line %d, p = '%.5s'", curline, p);
+		fprintf(stderr, "libtoml: uninitialised parser error at line %d, p = '%.5s'", curline, p);
 		return 1;
 	}
 
