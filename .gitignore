@@ -1,3 +1,17 @@
 ## build artifacts
 waf
 build/
+
+## all artifacts generated for libtoml
+deps/libtoml/Makefile
+deps/libtoml/autom4te.cache/
+deps/libtoml/config.log
+deps/libtoml/config.status
+deps/libtoml/configure
+deps/libtoml/libtoml.so
+deps/libtoml/main
+deps/libtoml/main.o
+deps/libtoml/parser_test
+deps/libtoml/toml.o
+deps/libtoml/toml_parse.c
+deps/libtoml/toml_parse.o
