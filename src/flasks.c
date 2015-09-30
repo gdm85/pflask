@@ -42,27 +42,68 @@ struct flask {
 	struct gengetopt_args_info args;
 };
 
-void walker(struct toml_node *node, void *context) {
-	struct flask **flasks = (struct flask **)context;
+// I once had a bad dream about a function called like this
+char *file_get_contents(char *file_name, long *adj_bufsize) {
+	int rc;
+	char *source = NULL;
+	FILE *fp = fopen(file_name, "r");
+	sys_fail_if(fp == NULL, "could not open file");
 
-	// allocate a new flask for each table
-	if (node->type == TOML_TABLE) {
-		printf("table name = %s, parent = %p\n", node->name, node->parent);
-//		*flasks = realloc(flasks, sizeof(flask)+1);
-	}
+	// seek EOF
+	rc = fseek(fp, 0L, SEEK_END);
+       	sys_fail_if(rc != 0, "fseek error");
+
+	long bufsize = ftell(fp);
+        sys_fail_if(bufsize == -1, "ftell error");
+
+	// quit if file is too large
+	sys_fail_if(bufsize > 64 * 1024, "file larger than 64K");
+
+	*adj_bufsize = bufsize + 1;
+
+	source = malloc(sizeof(char) * *adj_bufsize);
+        sys_fail_if(source == NULL, "OOM error");
+
+	source[bufsize] = '\0';
+
+	// rewind
+	rc = fseek(fp, 0L, SEEK_SET);
+       	sys_fail_if(rc != 0, "fseek error");
+
+	// be brave: read entire file into memory
+        size_t size = fread(source, sizeof(char), bufsize, fp);
+        sys_fail_if(size == 0, "file read error");
+
+	fclose(fp);
+
+	return source;
 }
 
-void test_toml() {
+void read_flask(char *file_name, char *flask_name) {
+	long size;
+	char *source = file_get_contents(file_name, &size);
+
 	struct toml_node *root;
 	struct toml_node *node;
-	char *buf = "[flask1.sub]\narg1 = \"val1\"\ncaps = [ \"red\", \"yellow\", \"green\" ]\n";
 
 	toml_init(&root);
-	toml_parse(root, buf, strlen(buf)+1);
+	toml_parse(root, source, size);
 
-	struct flask *flasks = NULL;
-	toml_walk(root, walker, &flasks);
+	node = toml_get(root, flask_name);
 
-//	toml_dump(node, stdout);
+	if (node == NULL) {
+		fail_printf("Cannot find flask '%s'", flask_name);
+		return;
+	}
+
+	node = toml_get(node, "user");
+	if (node == NULL) {
+		fail_printf("Cannot find user field");
+		return;
+	}
+
+	toml_dump(node, stdout);
 	toml_free(root);
+
+	free(source);
 }

@@ -116,6 +116,7 @@ def build(bld):
 		( 'src/cgroup.c'                   ),
 		( 'src/cmdline.c'                  ),
 		( 'src/dev.c'                      ),
+		( 'src/flasks.c'                   ),
 		( 'src/machine.c',      'dbus'     ),
 		( 'src/mount.c'                    ),
 		( 'src/netif.c'                    ),
@@ -129,26 +130,16 @@ def build(bld):
 		( 'src/util.c'                     ),
 	]
 
-	bld.env.append_value('INCLUDES', ['deps', 'src'])
+	bld.env.append_value('INCLUDES', ['deps', 'deps/libtoml', 'src'])
 
-	bld(
-		name   = 'libtoml',
-		cwd    = 'deps/libtoml',
-		rule   = 'autoconf && ./configure && make -j && cp libtoml.so ../../build/deps',
-		source = bld.path.ant_glob('deps/libtoml/*.c') +
-		         bld.path.ant_glob('deps/libtoml/*.h') +
-		         bld.path.ant_glob('deps/libtoml/*.ac') +
-		         bld.path.ant_glob('deps/libtoml/*.in'),
-		target = 'deps/libtoml.so',
-		install_path = bld.env.LIBDIR
-	)
+	bld.read_shlib('toml', paths=['deps/libtoml'])
 
 	bld(
 		name         = 'pflask',
 		features     = 'c cprogram',
 		source       = filter_sources(bld, sources),
 		target       = 'pflask',
-		use          = bld.env.deps,
+		use          = ['toml'] + bld.env.deps,
 		install_path = bld.env.BINDIR,
 	)
 

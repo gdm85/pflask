@@ -46,6 +46,7 @@
 
 #include "capabilities.h"
 #include "cmdline.h"
+#include "flasks.h"
 
 #include "pty.h"
 #include "user.h"
@@ -73,6 +74,8 @@ Use:
 int kernelQuality = 1;
 
 int main(int argc, char *argv[]) {
+	read_flask("example.flask", "flask");
+
 	int rc, sync[2];
 
 	pid_t pid = -1;

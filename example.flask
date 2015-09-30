@@ -1,0 +1,6 @@
+# This is a TOML document
+
+[flask]
+user = "nobody"
+chroot = "/tmp/rootfs"
+caps = [ "-chown", "-setuid", "-setgid" ]
