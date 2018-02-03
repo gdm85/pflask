@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
 		setup_capabilities(clear_caps, total_caps, caps);
 #endif
 
-		if (args.chdir_given) {
+		if (args.chdir_given && args.chdir_arg != NULL) {
 			rc = chdir(args.chdir_arg);
 			sys_fail_if(rc < 0, "Error changing cwd");
 		}
